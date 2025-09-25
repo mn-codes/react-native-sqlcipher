@@ -394,7 +394,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
         } else {
             // Open unencrypted database (not recommended for production)
             FLog.w(TAG, "Opening unencrypted database - not recommended for production use");
-            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null, null, null);
+            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), (String)null, null, null, null);
         }
         
         if (cbc != null)
