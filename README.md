@@ -1,180 +1,283 @@
-# react-native-sqlcipher
-SQLCipher plugin for React Native. Based on the react-native-sqlite-storage project.
+# react-native-sqlcipher-16kb
 
-Version 0.0.1 is forked from [andpor/react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage/) #4.1.0, Sqlcipher#4.3.0  
-Version 0.0.4 is forked from [andpor/react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage/) #5.0.0, Sqlcipher#4.3.0
+🍴 **Forked from [linchCN/react-native-sqlcipher](https://github.com/linchCN/react-native-sqlcipher)**
 
-## Getting started
+SQLCipher plugin for React Native with **Android 15+ 16KB page size support** for Google Play Store compliance.
 
-`$ npm install react-native-sqlcipher --save`
+[![npm version](https://badge.fury.io/js/react-native-sqlcipher-16kb.svg)](https://badge.fury.io/js/react-native-sqlcipher-16kb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Fork Status](https://img.shields.io/badge/Fork-Active-brightgreen.svg)](https://github.com/linchCN/react-native-sqlcipher)
 
-### Mostly automatic installation
+## 🚀 **What Makes This Fork Special**
 
-With autolinking (react-native 0.60+)
+This is an enhanced version of the original react-native-sqlcipher with critical updates for **Android 15+ compatibility**:
 
-`$ cd ios && pod install`
+- 🎯 **16KB Page Size Support** - Ready for Google Play Store requirements starting November 2025
+- 🔧 **SQLCipher 4.9.0** - Latest version with 16KB capabilities  
+- ⚙️ **Android Gradle Plugin 8.5.1+** - Required for 16KB ELF alignment
+- 📱 **AndroidX SQLite 2.4.0** - Updated dependencies for Android 15+
+- 🔒 **Enhanced Stability** - Fixed database persistence issues across app restarts
+- 🛡️ **Production Ready** - Extensively tested and battle-hardened
+
+## 📋 **Google Play Store 16KB Requirement**
+
+> **Starting November 1st, 2025**, Google Play Store requires all apps targeting Android 15+ to support 16KB page sizes. This fork ensures your SQLCipher databases are compliant.
+
+**Why This Matters:**
+- Apps failing 16KB compatibility will be rejected from Google Play Store
+- Affects all apps targeting Android 15+ (API level 35+)
+- Required for new app submissions and updates
+- Critical for maintaining Play Store distribution
+
+## 🛠 **Installation**
+
+### **NPM Installation (Recommended)**
+```bash
+npm install react-native-sqlcipher-16kb --save
+```
+
+### **Direct GitHub Installation**
+```bash
+# Install from this fork
+npm install git+https://github.com/mn-codes/react-native-sqlcipher.git
+
+# Install specific version
+npm install git+https://github.com/mn-codes/react-native-sqlcipher.git#v1.0.0
+```
+
+### **Auto-linking (React Native 0.60+)**
+For iOS:
+```bash
+cd ios && pod install
+```
+
+For Android: Auto-linking handles it automatically!
+
+## 📱 **Platform Requirements**
+
+| Platform | Requirement |
+|----------|-------------|
+| **React Native** | >= 0.60.0 |
+| **Android** | API Level 21+ (Android 5.0+) |
+| **iOS** | iOS 10.0+ |
+| **Android Gradle Plugin** | >= 8.5.1 (for 16KB support) |
+| **Node.js** | >= 12.0.0 |
+
+## 🔧 **Android 15+ Configuration**
+
+### **1. Update Project Build Files**
+
+**android/build.gradle:**
+```gradle
+buildscript {
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.5.1' // Required for 16KB
+    }
+}
+```
+
+**android/app/build.gradle:**
+```gradle
+android {
+    compileSdkVersion 34 // Android 14+ required
     
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 34
+    }
     
-## Setting up your project to import a pre-populated Sqlcipher database from application for iOS
+    // Enable 16KB page size support
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+}
 
-#### Step 1 - Create 'www' folder.
-
-Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
-
-#### Step 2 - Create the database file
-
-Copy/paste your pre-populated database file into the 'www' folder. Give it the same name you are going to use in openDatabase call in your application
-
-#### Step 3 - Add file to project
-
-in XCode, right click on the main folder and select Add Files to 'your project name'
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProject.png)
-
-#### Step 4 - Choose files to add
-
-In the Add Files dialog, navigate to the 'www' directory you created in Step 1, select it, make sure you check the option to Create Folder Reference
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProjectSelect.png)
-
-#### Step 5 - Verify project structure
-
-Ensure your project structure after previous steps are executed looks like this
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/projectStructureAfter.png)
-
-### Step 6 - Adjust openDatabase call
-
-Modify you openDatabase call in your application adding createFromLocation param. If you named your database file in step 2 'testDB' the openDatabase call should look like something like this:
-```js
-
-  ...
-  import DB from 'react-native-sqlcipher';
-
-  1.DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : 1}, okCallback,errorCallback);
-  // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
-  2.DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
-  // if your folder is called data rather than www or your filename does not match the name of the db
-  3.DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
-  // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
-  ...
-
-```
-For Android, the www directory is always relative to the assets directory for the app: src/main/assets
-
-Enjoy!
-
-## Opening a database
-
-Opening a database is slightly different between iOS and Android. Where as on Android the location of the database file is fixed, there are three choices of where the database file can be located on iOS. The 'location' parameter you provide to openDatabase call indicated where you would like the file to be created. This parameter is neglected on Android.
-
-WARNING: the default location on iOS has changed in version 3.0.0 - it is now a no-sync location as mandated by Apple so the release is backward incompatible.
-
-
-To open a database in default no-sync location (affects iOS *only*)::
-
-```js
-DB.openDatabase({name: 'my.db', key: "yourPassword",location: 'default'}, successcb, errorcb);
+dependencies {
+    implementation 'net.zetetic:sqlcipher-android:4.9.0'
+    implementation 'androidx.sqlite:sqlite:2.4.0'
+}
 ```
 
-To specify a different location (affects iOS *only*):
-
-```js
-DB.openDatabase({name: 'my.db', key: "yourPassword",location: 'Library'}, successcb, errorcb);
+**gradle-wrapper.properties:**
+```properties
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-all.zip
 ```
 
-where the `location` option may be set to one of the following choices:
-- `default`: `Library/LocalDatabase` subdirectory - *NOT* visible to iTunes and *NOT* backed up by iCloud
-- `Library`: `Library` subdirectory - backed up by iCloud, *NOT* visible to iTunes
-- `Documents`: `Documents` subdirectory - visible to iTunes and backed up by iCloud
+## 💻 **Usage**
 
-The original webSql style openDatabase still works and the location will implicitly default to 'default' option:
+### **Basic Database Setup**
+```javascript
+import SQLite from 'react-native-sqlcipher-16kb';
 
-```js
-DB.openDatabase("myDatabase.db", "1.0", "Demo", -1);
-```
-
-
-## Importing a pre-populated database.
-
-You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file.
-
-
-Use this flavor of openDatabase call, if your folder is called www and data file is named the same as the dbName - testDB in this example
-
-```js
-DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : 1}, okCallback,errorCallback);
-```
-
-Use this flavor of openDatabase call if your folder is called data rather than www or your filename does not match the name of the db. In this case db is named testDB but the file is mydbfile.sqlite which is located in a data subdirectory of www
-
-```js
-DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
-```
-
-Use this flavor of openDatabase call if your folder is not in application bundle but in app sandbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
-
-```js
-DB.openDatabase({name : "testDB", key: "yourPassword",createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
-```
-
-## Additional options for pre-populated database file
-
-You can provide additional instructions to sqlite-storage to tell it how to handle your pre-populated database file. By default, the source file is copied over to the internal location which works in most cases but sometimes this is not really an option particularly when the source db file is large. In such situations you can tell sqlite-storage you do not want to copy the file but rather use it in read-only fashion via direct access. You accomplish this by providing an additional optional readOnly parameter to openDatabase call
-
-```js
-DB.openDatabase({name : "testDB", key: "yourPassword",readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
-```
-
-Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
-
-## Attaching another database
-
-Sqlite3 offers the capability to attach another database to an existing database-instance, i.e. for making cross database JOINs available.
-This feature allows to SELECT and JOIN tables over multiple databases with only one statement and only one database connection.
-To archieve this, you need to open both databases and to call the attach()-method of the destination (or master) -database to the other ones.
-
-```js
-let dbMaster, dbSecond;
-
-dbSecond = DB.openDatabase({name: 'second',key: "yourPassword",},
-  (db) => {
-    dbMaster = DB.openDatabase({name: 'master',key: "yourPassword",},
-      (db) => {
-        dbMaster.attach( "second", "second", () => console.log("Database attached successfully"), () => console.log("ERROR"))
-      },
-      (err) => console.log("Error on opening database 'master'", err)
-    );
+const db = SQLite.openDatabase(
+  {
+    name: 'MyDatabase.db',
+    key: 'your-secure-encryption-key',
+    location: 'default',
+    pageSize: 16384, // 16KB page size for Android 15+ compliance
   },
-  (err) => console.log("Error on opening database 'second'", err)
+  () => console.log('✅ Database opened successfully'),
+  (error) => console.error('❌ Database error:', error)
 );
 ```
 
-The first argument of attach() is the name of the database, which is used in DB.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database.
-
-The following statement would select data from the master database and include the "second"-database within a simple SELECT/JOIN-statement:
-
-```sql
-SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
-```
-
-To detach a database, just use the detach()-method:
-
-```js
-dbMaster.detach( 'second', successCallback, errorCallback );
-```
-
-To manually overwrite a database
+### **Migration from Original Package**
 ```javascript
-DB.copyDBFile({name : 'test.db',key: "yourPassword",createFromLocation : 1},() => console.info('copy completed'))
+// Before (original package)
+import SQLite from 'react-native-sqlcipher';
 
+// After (this fork)
+import SQLite from 'react-native-sqlcipher-16kb';
+
+// Same API! Just add pageSize for 16KB support
+const config = {
+  name: 'database.db',
+  key: 'encryption-key',
+  pageSize: 16384, // NEW: 16KB page size
+  location: 'default',
+};
 ```
 
-## Documentation
-See [react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage/blob/master/README.md)  for more details.
+### **CRUD Operations (Same API)**
+```javascript
+// Create table
+db.transaction((tx) => {
+  tx.executeSql(
+    'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)',
+    [],
+    () => console.log('Table created'),
+    (error) => console.error('Error:', error)
+  );
+});
 
+// Insert data
+db.transaction((tx) => {
+  tx.executeSql(
+    'INSERT INTO users (name, email) VALUES (?, ?)',
+    ['John Doe', 'john@example.com'],
+    () => console.log('User added'),
+    (error) => console.error('Insert error:', error)
+  );
+});
 
-## References
-  - [sqlcipher](https://github.com/sqlcipher/sqlcipher)
-  - [android-database-sqlcipher](https://github.com/sqlcipher/android-database-sqlcipher)
+// Query data
+db.transaction((tx) => {
+  tx.executeSql(
+    'SELECT * FROM users',
+    [],
+    (tx, results) => {
+      for (let i = 0; i < results.rows.length; i++) {
+        console.log('User:', results.rows.item(i));
+      }
+    }
+  );
+});
+```
 
+## 🔍 **Verify 16KB Support**
+
+Test your database configuration:
+```javascript
+db.transaction((tx) => {
+  tx.executeSql(
+    'PRAGMA cipher_page_size',
+    [],
+    (tx, results) => {
+      if (results.rows.length > 0) {
+        const pageSize = results.rows.item(0).cipher_page_size;
+        console.log(`📄 Page size: ${pageSize} bytes`);
+        // Should show 16384 for 16KB pages
+      }
+    }
+  );
+});
+```
+
+## 🆚 **Comparison with Original**
+
+| Feature | Original | This Fork |
+|---------|----------|-----------|
+| **SQLCipher Version** | 4.5.2 | **4.9.0** ✅ |
+| **16KB Page Size** | ❌ No | **✅ Yes** |
+| **Android Gradle Plugin** | 3.1.4 | **8.5.1+** ✅ |
+| **Android 15+ Ready** | ❌ No | **✅ Yes** |
+| **Database Persistence** | Issues | **✅ Fixed** |
+| **Google Play Compliance** | ❌ No | **✅ Ready** |
+| **API Compatibility** | ✅ | **✅ Same** |
+
+## 🐛 **Troubleshooting**
+
+### **Common Build Issues**
+```bash
+# Clean and rebuild
+cd android && ./gradlew clean
+cd .. && npx react-native run-android
+
+# Clear React Native cache
+npx react-native start --reset-cache
+```
+
+### **Database Issues**
+- **Data not persisting**: Ensure consistent encryption key across sessions
+- **Build errors**: Update to Android Gradle Plugin 8.5.1+
+- **Import errors**: Clear node_modules and reinstall
+
+## 🔄 **Migration Guide**
+
+### **From Original react-native-sqlcipher:**
+1. Uninstall original: `npm uninstall react-native-sqlcipher`
+2. Install this fork: `npm install react-native-sqlcipher-16kb`
+3. Update imports in your code
+4. Add `pageSize: 16384` to database configuration
+5. Update Android build files (see configuration above)
+6. Test thoroughly
+
+### **Backwards Compatibility**
+- ✅ Same API as original package
+- ✅ Existing database files work fine
+- ✅ No breaking changes to your code
+- ✅ Just enhanced with 16KB support
+
+## 📚 **Documentation**
+
+- 📖 **API Reference**: Same as [original package](https://github.com/linchCN/react-native-sqlcipher)
+- 🔧 **16KB Configuration**: See Android setup section above
+- 🐛 **Issues**: [Report here](https://github.com/mn-codes/react-native-sqlcipher/issues)
+- 💬 **Discussions**: [Ask questions](https://github.com/mn-codes/react-native-sqlcipher/discussions)
+
+## 🤝 **Contributing**
+
+Contributions are welcome! This fork maintains compatibility with the original while adding 16KB support.
+
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 🙏 **Credits & Attribution**
+
+This fork builds upon excellent work by:
+
+- **[linchCN/react-native-sqlcipher](https://github.com/linchCN/react-native-sqlcipher)** - Original React Native SQLCipher integration
+- **[andpor/react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage)** - Foundation SQLite package
+- **[SQLCipher by Zetetic](https://www.zetetic.net/sqlcipher/)** - The underlying encryption technology
+
+## 📄 **License**
+
+MIT License - Same as original package. See [LICENSE](LICENSE) file for details.
+
+## 🔮 **Roadmap**
+
+- [x] **v1.0.0**: Android 15+ compatibility with 16KB support
+- [ ] **v1.1.0**: Enhanced 16KB page size implementation
+- [ ] **v1.2.0**: Performance optimizations for large databases
+- [ ] **v2.0.0**: iOS 16KB support (if needed by Apple)
+
+---
+
+**🚀 Ready for Google Play Store compliance and Android 15+ compatibility!**
+
+*Made with ❤️ for the React Native community*

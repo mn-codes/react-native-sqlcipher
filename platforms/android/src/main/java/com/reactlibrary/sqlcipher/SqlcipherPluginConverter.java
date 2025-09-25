@@ -49,6 +49,39 @@ public abstract class SqlcipherPluginConverter {
      * Returns the value at {@code key} if it exists, coercing it if
      * necessary.
      */
+    static int getInt(ReadableMap map, String key, int defaultValue) {
+        if (map == null){
+            return defaultValue;
+        }
+        try {
+            ReadableType type = map.getType(key);
+            switch (type) {
+                case Number:
+                    return (int) map.getDouble(key);
+                case String: {
+                    String value = map.getString(key);
+                    try {
+                        return Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        return defaultValue;
+                    }
+                }
+                case Boolean:
+                    return map.getBoolean(key) ? 1 : 0;
+                case Null:
+                    return defaultValue;
+                default:
+                    return defaultValue;
+            }
+        } catch(NoSuchKeyException ex){
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value at {@code key} if it exists, coercing it if
+     * necessary.
+     */
     static boolean getBoolean(ReadableMap map, String key, boolean defaultValue) {
         if (map == null){
             return defaultValue;

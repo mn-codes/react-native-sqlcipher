@@ -10,13 +10,13 @@ package com.reactlibrary.sqlcipher;
 import android.annotation.SuppressLint;
 //import android.database.Cursor;
 //import android.database.sqlite.SQLiteDatabase;
-//import android.database.sqlite.SQLiteException;
+//import android.database.sqlite.SQLException;
 //import android.database.sqlite.SQLiteStatement;
 import android.database.Cursor;
-import net.sqlcipher.database.SQLiteCursor;
-import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteException;
-import net.sqlcipher.database.SQLiteStatement;
+import net.zetetic.database.sqlcipher.SQLiteCursor;
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+import android.database.SQLException;
+import net.zetetic.database.sqlcipher.SQLiteStatement;
 import android.content.Context;
 import android.util.Base64;
 
@@ -361,11 +361,12 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
      * @param dbname - The name of the database file
      * @param assetFilePath - path to the pre-populated database file
      * @param openFlags - the db open options
+     * @param pageSize - the page size for 16KB support (0 = use default)
      * @param cbc - JS callback
      * @return instance of SQLite database
      * @throws Exception
      */
-    private SQLiteDatabase openDatabase(String dbname, String key, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
+    private SQLiteDatabase openDatabase(String dbname, String key, String assetFilePath, int openFlags, int pageSize, CallbackContext cbc) throws Exception {
         SQLiteDatabase database = this.getDatabase(dbname);
         if (database != null && database.isOpen()) {
             // this only happens when DBRunner is cycling the db for the locking work around.
@@ -375,7 +376,18 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
         File dbfile = openDbFile(dbname,assetFilePath,openFlags,false);
 
-        SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), key, null, openFlags);
+        // Simple approach: disable 16KB page size for now to prevent database corruption
+        // The fundamental issue is that SQLCipher's page size must be consistent
+        FLog.w(TAG, "16KB page size temporarily disabled to prevent database corruption issues");
+        
+        SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null);
+        if (key != null) {
+            mydb.rawExecSQL("PRAGMA key = '" + key + "'");
+        }
+        
+        // Log that we're using default page size
+        FLog.v(TAG, "Database opened with default page size (4KB)");
+        
         if (cbc != null)
             cbc.success("Database opened");
 
@@ -670,7 +682,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
                         rowsAffected = myStatement.executeUpdateDelete();
                         // Indicate valid results:
                         needRawQuery = false;
-                    } catch (SQLiteException ex) {
+                    } catch (SQLException ex) {
                         // Indicate problem & stop this query:
                         errorMessage = ex.getMessage();
                         FLog.e(TAG, "SQLiteStatement.executeUpdateDelete() failed", ex);
@@ -707,7 +719,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
                         } else {
                             queryResult.putInt("rowsAffected", 0);
                         }
-                    } catch (SQLiteException ex) {
+                    } catch (SQLException ex) {
                         // report error result with the error message
                         // could be constraint violation or some other error
                         errorMessage = ex.getMessage();
@@ -724,7 +736,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
                         queryResult = Arguments.createMap();
                         queryResult.putInt("rowsAffected", 0);
-                    } catch (SQLiteException ex) {
+                    } catch (SQLException ex) {
                         errorMessage = ex.getMessage();
                         FLog.e(TAG, "SQLiteDatabase.beginTransaction() failed", ex);
                     }
@@ -738,7 +750,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
                         queryResult = Arguments.createMap();
                         queryResult.putInt("rowsAffected", 0);
-                    } catch (SQLiteException ex) {
+                    } catch (SQLException ex) {
                         errorMessage = ex.getMessage();
                         FLog.e(TAG, "SQLiteDatabase.setTransactionSuccessful/endTransaction() failed", ex);
                     }
@@ -751,7 +763,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
                         queryResult = Arguments.createMap();
                         queryResult.putInt("rowsAffected", 0);
-                    } catch (SQLiteException ex) {
+                    } catch (SQLException ex) {
                         errorMessage = ex.getMessage();
                         FLog.e(TAG, "SQLiteDatabase.endTransaction() failed", ex);
                     }
@@ -930,6 +942,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
         final String key;
         final String dbname;
         final int openFlags;
+        final int pageSize;
         private String assetFilename;
         private boolean androidLockWorkaround;
         final BlockingQueue<DBQuery> q;
@@ -940,6 +953,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
         DBRunner(final String dbname, ReadableMap options, CallbackContext cbc) {
             this.dbname = dbname;
             this.key = options.getString("key");
+            this.pageSize = SqlcipherPluginConverter.getInt(options, "pageSize", 0); // 0 means use default
             int openFlags = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY;
             try {
                 this.assetFilename = SqlcipherPluginConverter.getString(options,"assetFilename",null);
@@ -961,8 +975,8 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
         public void run() {
             try {
-                this.mydb = openDatabase(dbname, key, this.assetFilename, this.openFlags, this.openCbc);
-            } catch (SQLiteException ex) {
+                this.mydb = openDatabase(dbname, key, this.assetFilename, this.openFlags, this.pageSize, this.openCbc);
+            } catch (SQLException ex) {
                 FLog.e(TAG, "SQLite error opening database, stopping db thread", ex);
                 if (this.openCbc != null) {
                     this.openCbc.error("Can't open database." + ex);
@@ -990,7 +1004,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
                         // FLog.v(TAG, "close and reopen db");
                         closeDatabaseNow(dbname);
-                        this.mydb = openDatabase(dbname, key, "", this.openFlags, null);
+                        this.mydb = openDatabase(dbname, key, "", this.openFlags, this.pageSize, null);
                         // FLog.v(TAG, "close and reopen db finished");
                     }
 

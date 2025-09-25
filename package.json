@@ -1,7 +1,7 @@
 {
-  "name": "react-native-sqlcipher",
-  "version": "0.0.7",
-  "description": "SQLCipher(SQLite3) plugin for React Native",
+  "name": "react-native-sqlcipher-16kb",
+  "version": "1.0.0",
+  "description": "SQLCipher plugin for React Native with Android 15+ 16KB page size support for Google Play Store compliance",
   "main": "sqlite.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,32 +9,42 @@
   "keywords": [
     "react-native-sqlite-storage",
     "react-native-sqlite",
-    "react-component",
-    "reactnative",
     "react-native",
     "sqlite",
     "sqlite3",
-    "ios",
-    "android",
-    "promise",
-    "cordova-sqlite-storage",
-    "sqlcipher"
+    "sqlcipher",
+    "android-15",
+    "16kb-page-size",
+    "google-play-store",
+    "elf-alignment",
+    "android-gradle-plugin"
   ],
-  "author": "linch <369955292@qq.com>",
+  "author": "mn-codes",
   "license": "MIT",
-  "homepage": "https://github.com/linchenhuicn/react-native-sqlcipher/",
+  "homepage": "https://github.com/mn-codes/react-native-sqlcipher",
   "bugs": {
-    "url": "https://github.com/linchenhuicn/react-native-sqlcipher/issues"
+    "url": "https://github.com/mn-codes/react-native-sqlcipher/issues"
   },
   "peerDependencies": {
-    "react-native": "^0.41.2"
+    "react-native": ">=0.60.0"
   },
   "directories": {
-    "lib": "lib",
-    "test": "test"
+    "lib": "lib"
   },
+  "files": [
+    "lib/",
+    "platforms/",
+    "sqlite.js",
+    "react-native-sqlcipher.podspec",
+    "react-native.config.js",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/linchenhuicn/react-native-sqlcipher.git"
+    "url": "git+https://github.com/mn-codes/react-native-sqlcipher.git"
+  },
+  "engines": {
+    "node": ">=12.0.0"
   }
 }
