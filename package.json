@@ -1,6 +1,6 @@
 {
   "name": "react-native-sqlcipher-16kb",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "SQLCipher plugin for React Native with Android 15+ 16KB page size support for Google Play Store compliance",
   "main": "sqlite.js",
   "scripts": {
