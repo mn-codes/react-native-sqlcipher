@@ -378,9 +378,9 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
         SQLiteDatabase mydb;
         if (key != null && !key.isEmpty()) {
-            // Open encrypted database with SQLCipher using proper API
+            // Open encrypted database with SQLCipher using correct 5-parameter API
             FLog.v(TAG, "Opening encrypted database with SQLCipher");
-            mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), key, null, openFlags);
+            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), key, null, null, null);
             
             // Set 16KB page size if specified and database is newly created
             if (pageSize == 16384) {
@@ -394,7 +394,7 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
         } else {
             // Open unencrypted database (not recommended for production)
             FLog.w(TAG, "Opening unencrypted database - not recommended for production use");
-            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null);
+            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null, null, null);
         }
         
         if (cbc != null)
