@@ -376,17 +376,26 @@ public class SqlcipherPlugin extends ReactContextBaseJavaModule {
 
         File dbfile = openDbFile(dbname,assetFilePath,openFlags,false);
 
-        // Simple approach: disable 16KB page size for now to prevent database corruption
-        // The fundamental issue is that SQLCipher's page size must be consistent
-        FLog.w(TAG, "16KB page size temporarily disabled to prevent database corruption issues");
-        
-        SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null);
-        if (key != null) {
-            mydb.rawExecSQL("PRAGMA key = '" + key + "'");
+        SQLiteDatabase mydb;
+        if (key != null && !key.isEmpty()) {
+            // Open encrypted database with SQLCipher
+            FLog.v(TAG, "Opening encrypted database with SQLCipher");
+            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), key, null);
+            
+            // Set 16KB page size if specified and database is newly created
+            if (pageSize == 16384) {
+                try {
+                    mydb.rawExecSQL("PRAGMA cipher_page_size = 16384");
+                    FLog.v(TAG, "16KB page size configured for encrypted database");
+                } catch (Exception e) {
+                    FLog.w(TAG, "Could not set 16KB page size, using default: " + e.getMessage());
+                }
+            }
+        } else {
+            // Open unencrypted database (not recommended for production)
+            FLog.w(TAG, "Opening unencrypted database - not recommended for production use");
+            mydb = SQLiteDatabase.openOrCreateDatabase(dbfile.getAbsolutePath(), null, null);
         }
-        
-        // Log that we're using default page size
-        FLog.v(TAG, "Database opened with default page size (4KB)");
         
         if (cbc != null)
             cbc.success("Database opened");
