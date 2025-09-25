@@ -2,7 +2,8 @@ module.exports = {
 	dependency: {
 		platforms: {
 			ios: {
-				project: './platforms/ios/SQLite.xcodeproj'
+				sourceDir: './platforms/ios',
+				project: './platforms/ios/Sqlcipher.xcodeproj'
 			},
 			android: {
 				sourceDir: './platforms/android'
